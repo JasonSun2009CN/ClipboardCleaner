@@ -39,13 +39,22 @@ struct ClipboardWriter {
     /// Replaces the clipboard with the cleaned plain text.
     /// Returns the pasteboard's changeCount after the write (used later to
     /// verify nobody else wrote in the meantime), or nil on failure.
+    ///
+    /// When `fallback` is given and the write fails after `clearContents`,
+    /// the original state is put back immediately so the user's clipboard
+    /// is never left empty.
     @discardableResult
-    func writeForPaste(_ text: String) -> Int? {
+    func writeForPaste(_ text: String, fallback: PasteboardRestorePoint? = nil) -> Int? {
         pasteboard.clearContents()
         let item = NSPasteboardItem()
         item.setString(text, forType: .string)
-        guard pasteboard.writeObjects([item]) else { return nil }
-        return pasteboard.changeCount
+        if pasteboard.writeObjects([item]) {
+            return pasteboard.changeCount
+        }
+        if let fallback {
+            restoreImmediately(fallback)
+        }
+        return nil
     }
 
     /// Restores a captured state, but only if the clipboard still holds
@@ -54,7 +63,13 @@ struct ClipboardWriter {
     @discardableResult
     func restore(_ point: PasteboardRestorePoint, expectingChangeCount expected: Int) -> Bool {
         guard pasteboard.changeCount == expected else { return false }
+        return restoreImmediately(point)
+    }
 
+    /// Unconditional restore (used for the write-failure fallback where
+    /// we still own the clipboard).
+    @discardableResult
+    func restoreImmediately(_ point: PasteboardRestorePoint) -> Bool {
         pasteboard.clearContents()
         guard !point.items.isEmpty else { return true }
 
