@@ -55,11 +55,11 @@ struct MenuBarView: View {
                     }
                 }
             } label: {
+                // A Menu sizes its label like a single title; a second Text
+                // after Spacer gets dropped from the render, so the current
+                // mode has to live inside one interpolated Text.
                 MenuBarRow {
-                    Text("Cleaning Mode")
-                    Spacer()
-                    Text(appState.cleaningMode.displayName)
-                        .foregroundStyle(.secondary)
+                    Text("Cleaning Mode: \(appState.cleaningMode.displayName)")
                 }
             }
 

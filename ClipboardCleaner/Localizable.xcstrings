@@ -31,12 +31,12 @@
         }
       }
     },
-    "Cleaning Mode" : {
+    "Cleaning Mode: %@" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "清洁模式"
+            "value" : "清洁模式：%@"
           }
         }
       }
