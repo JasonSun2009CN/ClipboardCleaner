@@ -1,14 +1,12 @@
 import AppKit
 import Foundation
+import Observation
 
-/// All persisted user preferences. Thin UserDefaults wrapper — no Combine,
-/// no notification bus. Views observe the owning `AppState` instead.
+/// All persisted user preferences. Thin UserDefaults wrapper — no Combine.
+/// Views observe the owning `AppState` and reach these values through it.
+@Observable
 final class AppPreferences {
     private let defaults: UserDefaults
-
-    init(defaults: UserDefaults = .standard) {
-        self.defaults = defaults
-    }
 
     private enum Key {
         static let cleaningMode = "cleaningMode"
@@ -21,14 +19,17 @@ final class AppPreferences {
     static let defaultKeyCode: Int = 0x09 // kVK_ANSI_V
     static let defaultModifiers: UInt = NSEvent.ModifierFlags([.option, .command]).rawValue
 
+    /// Stored rather than read from `defaults` on every access:
+    /// `@Observable` only tracks stored properties, and SwiftUI views
+    /// (menu bar panel, Settings picker) must re-render on mode change.
     var cleaningMode: CleaningMode {
-        get {
-            defaults.string(forKey: Key.cleaningMode)
-                .flatMap(CleaningMode.init(rawValue:)) ?? .plainText
-        }
-        set {
-            defaults.set(newValue.rawValue, forKey: Key.cleaningMode)
-        }
+        didSet { defaults.set(cleaningMode.rawValue, forKey: Key.cleaningMode) }
+    }
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        self.cleaningMode = defaults.string(forKey: Key.cleaningMode)
+            .flatMap(CleaningMode.init(rawValue:)) ?? .plainText
     }
 
     var hotkeyKeyCode: Int {
