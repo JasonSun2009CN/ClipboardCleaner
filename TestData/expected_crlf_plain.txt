@@ -1,0 +1,9 @@
+Line 1: double  spaces between words.
+	Tab-indented code-style line.
+Line 3 has trailing spaces.   
+Line 4: tabs	between	tabs.
+
+
+
+Leading space line.
+End with two trailing spaces.  

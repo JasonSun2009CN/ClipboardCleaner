@@ -1,0 +1,16 @@
+Quarterly Notes
+Revenue grew 12% year over year, driven mainly by the subscription segment.
+Key points below:
+• North America
+  • Up 9%
+  • Churn down to 1.2%
+• EMEA up 15%
+1. Hire three engineers
+2. Ship the 2.0 release
+> “Margins will compress before they expand.” — CFO call, Q3
+def greet(name):
+    return f"Hello, {name}"
+Read the full report for details.
+Images without alt text vanish:
+Spaced out words and a tab here.
+Paragraph after a blank line.
