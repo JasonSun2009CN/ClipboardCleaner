@@ -1,3 +1,4 @@
+import Carbon
 import ServiceManagement
 import SwiftUI
 
@@ -10,6 +11,19 @@ struct SettingsView: View {
         Form {
             Section("General") {
                 LaunchAtLoginToggle()
+            }
+
+            Section("Shortcut") {
+                HStack {
+                    Text("Paste Clean")
+                    Spacer()
+                    ShortcutRecorder()
+                }
+                if appState.isShortcutConflicted {
+                    Text("This shortcut couldn't be registered. It may already be in use by another app.")
+                        .font(.callout)
+                        .foregroundStyle(.orange)
+                }
             }
 
             Section("Cleaning") {
@@ -31,7 +45,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 440)
+        .frame(width: 460)
         .fixedSize(horizontal: false, vertical: true)
     }
 }
@@ -54,5 +68,74 @@ private struct LaunchAtLoginToggle: View {
                     isEnabled = SMAppService.mainApp.status == .enabled
                 }
             }
+    }
+}
+
+/// Records the next valid key combination and registers it as the
+/// Paste Clean shortcut. A modifier is required so ordinary typing is
+/// never swallowed, and Escape cancels recording.
+private struct ShortcutRecorder: View {
+    @Environment(AppState.self) private var appState
+    @State private var isRecording = false
+    @State private var monitor: Any?
+
+    /// Keys that only modify other keys — pressing one alone is not a shortcut.
+    private static let modifierKeyCodes: Set<UInt32> = [
+        UInt32(kVK_Shift), UInt32(kVK_Control), UInt32(kVK_Option), UInt32(kVK_Command),
+        UInt32(kVK_CapsLock), UInt32(kVK_Function),
+        UInt32(kVK_RightShift), UInt32(kVK_RightControl),
+        UInt32(kVK_RightOption), UInt32(kVK_RightCommand),
+    ]
+
+    var body: some View {
+        Button {
+            isRecording ? stop() : start()
+        } label: {
+            Text(isRecording ? "Type shortcut…" : appState.shortcut.displayString)
+                .monospaced()
+                .frame(minWidth: 96)
+        }
+        .onDisappear { stop() }
+    }
+
+    private func start() {
+        isRecording = true
+        appState.isRecordingShortcut = true
+        appState.setHotkeyPaused(true)
+        monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            handleKey(event)
+            return nil // always swallowed while recording
+        }
+    }
+
+    private func stop() {
+        if let monitor {
+            NSEvent.removeMonitor(monitor)
+        }
+        monitor = nil
+        isRecording = false
+        appState.isRecordingShortcut = false
+        appState.setHotkeyPaused(false)
+    }
+
+    private func handleKey(_ event: NSEvent) {
+        if event.keyCode == UInt16(kVK_Escape) {
+            stop()
+            return
+        }
+        let keyCode = UInt32(event.keyCode)
+        if Self.modifierKeyCodes.contains(keyCode) {
+            return
+        }
+
+        let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        let shortcut = HotkeyShortcut(keyCode: keyCode, modifiers: flags)
+        guard shortcut.hasModifier else {
+            NSSound.beep()
+            return
+        }
+
+        appState.updateShortcut(shortcut)
+        stop()
     }
 }
