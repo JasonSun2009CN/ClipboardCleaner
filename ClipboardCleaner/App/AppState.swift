@@ -109,11 +109,11 @@ final class AppState {
         case .success:
             break // Invisible by default (spec §1.4).
         case .nothingToClean:
-            showFeedback("Nothing to clean.")
+            showFeedback(String(localized: "Nothing to clean."))
         case .unsupportedContent:
-            showFeedback("Clipboard contains unsupported content.")
+            showFeedback(String(localized: "Clipboard contains unsupported content."))
         case .clipboardWriteFailed, .pasteFailed:
-            showFeedback("Paste failed. Your clipboard was restored.")
+            showFeedback(String(localized: "Paste failed. Your clipboard was restored."))
         case .permissionRequired(let firstRequest):
             if firstRequest {
                 showPermissionDialog()
@@ -131,13 +131,13 @@ final class AppState {
 
         NSApp.activate()
         let alert = NSAlert()
-        alert.messageText = "Clipboard Cleaner needs permission"
-        alert.informativeText = """
+        alert.messageText = String(localized: "Clipboard Cleaner needs permission")
+        alert.informativeText = String(localized: """
         Clipboard Cleaner needs Accessibility permission to paste \
         cleaned text into other apps.
-        """
-        alert.addButton(withTitle: "Open Settings")
-        alert.addButton(withTitle: "Cancel")
+        """)
+        alert.addButton(withTitle: String(localized: "Open Settings"))
+        alert.addButton(withTitle: String(localized: "Cancel"))
         alert.alertStyle = .informational
 
         if alert.runModal() == .alertFirstButtonReturn {

@@ -91,7 +91,7 @@ private struct ShortcutRecorder: View {
         Button {
             isRecording ? stop() : start()
         } label: {
-            Text(isRecording ? "Type shortcut…" : appState.shortcut.displayString)
+            Text(isRecording ? String(localized: "Type shortcut…") : appState.shortcut.displayString)
                 .monospaced()
                 .frame(minWidth: 96)
         }

@@ -12,8 +12,8 @@ enum CleaningMode: String, CaseIterable, Sendable {
 
     var displayName: String {
         switch self {
-        case .plainText: "Plain Text"
-        case .normalize: "Normalize"
+        case .plainText: String(localized: "Plain Text")
+        case .normalize: String(localized: "Normalize")
         }
     }
 }
