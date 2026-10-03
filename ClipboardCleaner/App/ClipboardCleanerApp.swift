@@ -10,7 +10,7 @@ struct ClipboardCleanerApp: App {
             MenuBarView()
                 .environment(appState)
         } label: {
-            MenuBarIcon()
+            MenuBarIcon(isFlashingPermission: appState.isFlashingPermission)
         }
         .menuBarExtraStyle(.window)
 

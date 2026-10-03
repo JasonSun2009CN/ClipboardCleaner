@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The popover shown when the menu bar icon is clicked.
+/// The panel shown when the menu bar icon is clicked (spec §29).
 struct MenuBarView: View {
     @Environment(AppState.self) private var appState
 
@@ -13,14 +13,34 @@ struct MenuBarView: View {
                 .padding(.top, 10)
                 .padding(.bottom, 6)
 
-            MenuBarRow {
-                Text("Paste Clean")
-                Spacer()
-                Text("⌥⌘V")
-                    .foregroundStyle(.secondary)
-                    .monospaced()
+            Button {
+                appState.pasteClean()
+            } label: {
+                MenuBarRow {
+                    Text("Paste Clean")
+                    Spacer()
+                    Text(appState.shortcut.displayString)
+                        .foregroundStyle(.secondary)
+                        .monospaced()
+                }
             }
-            .onTapGesture { appState.pasteClean() }
+            .buttonStyle(.plain)
+
+            if !appState.isAccessibilityTrusted {
+                MenuBarRow {
+                    Text("Accessibility permission required")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                Button {
+                    appState.openAccessibilitySettings()
+                } label: {
+                    MenuBarRow {
+                        Text("Open Settings")
+                    }
+                }
+                .buttonStyle(.plain)
+            }
 
             Menu {
                 ForEach(CleaningMode.allCases, id: \.self) { mode in
@@ -63,11 +83,11 @@ struct MenuBarView: View {
 
             Spacer(minLength: 10)
         }
-        .frame(width: 260)
+        .frame(width: 280)
     }
 }
 
-/// One tappable row in the menu bar panel.
+/// One row in the menu bar panel.
 private struct MenuBarRow<Content: View>: View {
     @ViewBuilder var content: Content
 
