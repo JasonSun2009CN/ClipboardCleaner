@@ -1,5 +1,7 @@
 # Clipboard Cleaner
 
+English | [简体中文](README-cn.md)
+
 A lightweight native macOS utility that turns rich or messy clipboard
 content into clean plain text and pastes it directly into the current
 input field.
