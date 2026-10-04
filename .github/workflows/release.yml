@@ -1,0 +1,64 @@
+name: Release macOS app
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Test
+        run: >-
+          xcodebuild
+          -project ClipboardCleaner.xcodeproj
+          -scheme ClipboardCleaner
+          -configuration Debug
+          -destination 'platform=macOS'
+          -derivedDataPath "$RUNNER_TEMP/DerivedData"
+          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_REQUIRED=NO
+          test
+
+      - name: Build Release app
+        run: >-
+          xcodebuild
+          -project ClipboardCleaner.xcodeproj
+          -scheme ClipboardCleaner
+          -configuration Release
+          -derivedDataPath "$RUNNER_TEMP/DerivedData"
+          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_REQUIRED=NO
+          build
+
+      - name: Package app
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: >-
+          ditto -c -k --sequesterRsrc --keepParent
+          "$RUNNER_TEMP/DerivedData/Build/Products/Release/ClipboardCleaner.app"
+          "ClipboardCleaner-${TAG_NAME}.zip"
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            gh release upload "$TAG_NAME" "ClipboardCleaner-${TAG_NAME}.zip" --clobber
+          else
+            gh release create "$TAG_NAME" \
+              "ClipboardCleaner-${TAG_NAME}.zip" \
+              --title "Clipboard Cleaner ${TAG_NAME}" \
+              --generate-notes
+          fi
