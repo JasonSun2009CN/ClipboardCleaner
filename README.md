@@ -18,6 +18,26 @@ Clean clipboard
 Paste at current cursor
 ```
 
+## See it in action
+
+1. Copy the rich or messy content you want to clean.
+
+    ![The copied source content](eg.png)
+
+2. A normal paste keeps the original formatting and clutter.
+
+    ![The result of a normal paste](normal_paste.png)
+
+3. Open the menu bar panel to check the current cleaning mode or access
+  settings.
+
+    ![Clipboard Cleaner menu bar UI](manu.png)
+
+4. Press the Clean Paste shortcut (⌘K by default) to insert clean plain
+  text at the current cursor.
+
+    ![The result of Clean Paste](clean_paste.png)
+
 No main window. No clipboard history. The ideal experience is that you
 never think about the app — you just get a better Paste.
 
