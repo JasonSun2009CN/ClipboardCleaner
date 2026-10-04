@@ -17,6 +17,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build
-      run: swift build -v
+      run: xcodebuild -project ClipboardCleaner.xcodeproj -scheme ClipboardCleaner -configuration Debug -derivedDataPath "$RUNNER_TEMP/DerivedData" build
     - name: Run tests
-      run: swift test -v
+      run: xcodebuild -project ClipboardCleaner.xcodeproj -scheme ClipboardCleaner -configuration Debug -destination 'platform=macOS' -derivedDataPath "$RUNNER_TEMP/DerivedData" test
