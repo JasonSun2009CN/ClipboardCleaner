@@ -13,6 +13,22 @@ struct SettingsView: View {
                 LaunchAtLoginToggle()
             }
 
+            Section("Language") {
+                Picker("App Language", selection: $appState.appLanguage) {
+                    ForEach(AppLanguage.allCases, id: \.self) { language in
+                        Text(language.displayName).tag(language)
+                    }
+                }
+                .pickerStyle(.radioGroup)
+                .onChange(of: appState.appLanguage) { _, _ in
+                    // The interface language is fixed at launch, so restart.
+                    appState.relaunch()
+                }
+                Text("The app restarts to apply the new language.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+
             Section("Shortcut") {
                 HStack {
                     Text("Paste Clean")

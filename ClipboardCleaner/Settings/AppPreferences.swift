@@ -13,7 +13,12 @@ final class AppPreferences {
         static let hotkeyKeyCode = "hotkeyKeyCode"
         static let hotkeyModifiers = "hotkeyModifiers"
         static let permissionPromptShown = "permissionPromptShown"
+        static let appLanguage = "appLanguage"
     }
+
+    /// Per-app interface-language override; `AppleLanguages` is how
+    /// macOS selects the bundle's localization at launch.
+    static let appleLanguagesKey = "AppleLanguages"
 
     /// Default paste shortcut: ⌘K.
     static let defaultKeyCode: Int = 0x28 // kVK_ANSI_K
@@ -26,10 +31,25 @@ final class AppPreferences {
         didSet { defaults.set(cleaningMode.rawValue, forKey: Key.cleaningMode) }
     }
 
+    /// Interface language. Writing it also updates the per-app
+    /// `AppleLanguages` default so the next launch uses that language.
+    var appLanguage: AppLanguage {
+        didSet {
+            defaults.set(appLanguage.rawValue, forKey: Key.appLanguage)
+            if let code = appLanguage.appleLanguageCode {
+                defaults.set([code], forKey: Self.appleLanguagesKey)
+            } else {
+                defaults.removeObject(forKey: Self.appleLanguagesKey)
+            }
+        }
+    }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         self.cleaningMode = defaults.string(forKey: Key.cleaningMode)
             .flatMap(CleaningMode.init(rawValue:)) ?? .plainText
+        self.appLanguage = defaults.string(forKey: Key.appLanguage)
+            .flatMap(AppLanguage.init(rawValue:)) ?? .system
     }
 
     var hotkeyKeyCode: Int {

@@ -8,9 +8,10 @@
 
 ## 0. 一分钟概览 / TL;DR
 
-**EN:** A native macOS menu-bar utility (Swift + SwiftUI/AppKit, zero third-party deps): copy with ⌘C anywhere, press ⌥⌘V to paste a *cleaned* version into the frontmost app, then the original clipboard content is automatically restored. HTML is parsed locally by a hand-written tokenizer (regex tag-stripping is forbidden by the spec); structure (paragraphs, lists, indentation, code blocks, blockquotes) is preserved. Fully local: no network, no clipboard history, no analytics/telemetry/AI. All 10 slices are committed on `main` (11 conventional commits including this document); 85 tests / 12 suites green; Debug + Release build OK; one full E2E paste round-trip verified in TextEdit.
+**EN:** A native macOS menu-bar utility (Swift + SwiftUI/AppKit, zero third-party deps): copy with ⌘C anywhere, press ⌘K (default, configurable in Settings) to paste a *cleaned* version into the frontmost app, then the original clipboard content is automatically restored. HTML is parsed locally by a hand-written tokenizer (regex tag-stripping is forbidden by the spec); structure (paragraphs, lists, indentation, code blocks, blockquotes) is preserved. Fully local: no network, no clipboard history, no analytics/telemetry/AI. All 10 slices are committed on `main`; 90 tests / 13 suites green; Debug + Release build OK; one full E2E paste round-trip verified in TextEdit.
 
-- 菜单栏工具：任意 App 中 ⌘C 复制 → ⌥⌘V → 把"干净版本"粘贴到当前 App → **自动恢复剪贴板原文**（再按 ⌘V 拿回原内容）。
+- 菜单栏工具：任意 App 中 ⌘C 复制 → ⌘K（默认，可在设置里改）→ 把"干净版本"粘贴到当前 App → **自动恢复剪贴板原文**（再按 ⌘V 拿回原内容）。
+- ⌥⌘V 曾是默认，但实测会把按键泄漏给前台 App（TextEdit/Notes 闪 Format 菜单、出十字光标）；换 ⌘K 后一切正常，用户拍板改为 ⌘K 默认。
 - 清洗路径：HTML → 手写词法分析 + 块级转换器 → 结构化纯文本；RTF → 提取纯文本；纯文本 → 按模式处理。
 - 清洗模式：`Plain Text`（直通）/ `Normalize`（折叠空白但保留结构）。
 - 全程本地；粘贴内容永不写日志；无网络、无历史、无遥测。
@@ -20,7 +21,7 @@
 | 项 | 状态 |
 |---|---|
 | 功能实现（10 slices） | ✅ 全部提交（见 `git log`） |
-| 单元 + 性能测试 | ✅ 85 tests / 12 suites 通过 |
+| 单元 + 性能测试 | ✅ 90 tests / 13 suites 通过 |
 | Debug / Release 构建 | ✅ 通过 |
 | 实机 E2E（TextEdit 往返 + 剪贴板恢复） | ✅ 早期构建验证过 |
 | 模式切换 UI 不刷新 Bug | ✅ 已修复并提交 `e1c5334`（**需在 Xcode 重新 Run 后生效**） |
@@ -47,9 +48,9 @@ xcodebuild -project $PROJ -scheme ClipboardCleaner -derivedDataPath "$DD" test \
   -only-testing:ClipboardCleanerTests/CleaningModeObservationTests
 ```
 
-- **12 个测试套件**：CleaningMode、CleaningMode observation、CleaningEngine、HTMLCleaner、TextNormalizer、PlainTextCleaner、ClipboardReader、ClipboardWriter、HotkeyShortcut、GlobalHotkeyManager、PasteService、Performance。
+- **13 个测试套件**：AppLanguage、CleaningMode、CleaningMode observation、CleaningEngine、HTMLCleaner、TextNormalizer、PlainTextCleaner、ClipboardReader、ClipboardWriter、HotkeyShortcut、GlobalHotkeyManager、PasteService、Performance。
 - **性能基线**（PerformanceTests 守护）：64KB→16ms；1MB→237ms（>512KB 自动转后台）；病态嵌套结构耗时线性。
-- 测试文件共 10 个：`ClipboardCleanerTests/*.swift`。
+- 测试文件共 11 个：`ClipboardCleanerTests/*.swift`。`PasteServiceTests.successFlow` 偶发并行 flake（隔离跑必过），全绿基线以 `Test run with 90 tests in 13 suites passed` 为准。
 
 ---
 
@@ -76,20 +77,21 @@ ClipboardCleaner/
 │   └── CleaningOptions.swift       # 模式/选项定义
 ├── Hotkey/
 │   ├── GlobalHotkeyManager.swift   # Carbon RegisterEventHotKey；回调内 MainActor.assumeIsolated
-│   └── HotkeyShortcut.swift        # keycode+modifiers ↔ 显示串（默认 ⌥⌘V）
+│   └── HotkeyShortcut.swift        # keycode+modifiers ↔ 显示串（默认 ⌘K）
 ├── Paste/
 │   ├── PasteService.swift          # ⭐ 主管线：读→清洗→写→⌘V→恢复；背景阈值 512KB；PasteOutcome
 │   └── AccessibilityService.swift  # AXIsProcessTrusted() + 打开系统设置 URL（不走 prompt API）
 ├── Settings/
-│   └── AppPreferences.swift        # @Observable UserDefaults 封装（cleaningMode 为存储属性，见 §5-3）
+│   ├── AppLanguage.swift           # 语言枚举（跟随系统/English/简体中文；改写 AppleLanguages）
+│   └── AppPreferences.swift        # @Observable UserDefaults 封装（cleaningMode/appLanguage 为存储属性，见 §5-3）
 └── UI/
     ├── MenuBarView.swift           # 面板（spec §29）：Paste Clean / 权限状态行 / 模式菜单 / 设置 / 退出
     ├── MenuBarIcon.swift           # 模板图标；⚠️ 闪 1.5s 自动恢复
     ├── FeedbackHUD.swift           # 瞬时反馈气泡（含 FeedbackWindowController）
-    └── SettingsView.swift          # Launch at Login（SMAppService）/ 快捷键录制器 / 默认模式 / 隐私文案
+    └── SettingsView.swift          # Launch at Login（SMAppService）/ 语言单选（改后自动重启）/ 快捷键录制器 / 默认模式 / 隐私文案
 ```
 
-**主流程**：Carbon ⌥⌘V → `AppState.pasteClean()` → `PasteService.trigger()`
+**主流程**：Carbon ⌘K → `AppState.pasteClean()` → `PasteService.trigger()`
 → AX 门禁（未授权 → `.permissionRequired`，**不碰剪贴板**）
 → `ClipboardReader` 快照（含 changeCount）→ `CleaningEngine`（按模式清洗）→ `ClipboardWriter.writeForPaste`（写净化结果）→ 合成 ⌘V → 按 changeCount 守卫恢复原文 → `onOutcome` → HUD / ⚠️ 闪 / 首次权限对话框。
 
@@ -108,6 +110,8 @@ ClipboardCleaner/
 | "显示菜单栏图标"设置项 | **移除**（不提供） | 用户选定 |
 | Normalize 与 HTML | **HTML 派生输出不套 Normalize** | 助理判断并已在代码/README 记录：会破坏嵌套列表与 `pre` 缩进；纯文本/RTF 路径严格按 spec §17/18 |
 | 测试隔离 | 一律私有 `NSPasteboard(name:)`，**永不触碰 `.general`** | |
+| 默认快捷键 | **⌘K**（`kVK_ANSI_K` + `.command`） | 原默认 ⌥⌘V 会把按键泄漏给前台 App（Format 菜单闪、十字光标）；换 ⌘K 后实测正常，用户拍板。用户机器已通过录制器存了 ⌘K，改动只影响新装与测试 |
+| 语言设置 | 跟随系统（默认）/ English / 简体中文；写 per-app `AppleLanguages` 后**立即自动重启** | 用户选定；macOS 只在启动时解析界面语言，故必须重启；重启用 `sh -c "sleep 1; open -n …"` 避开双实例 |
 | 启动方式 | `LSUIElement=true`（无 Dock 图标） | |
 | 语言/依赖 | Swift 6 语言模式、纯系统框架、零第三方依赖 | spec 硬规则 |
 
@@ -179,7 +183,7 @@ end tell
 - 失效 → 向用户摆选项（**必须问，不要自己定**）：① Xcode 账号 Apple Development 证书（Signing & Capabilities 选 Team，授权一次永久有效）；② 自签代码签名证书（可脚本化）；③ 接受每次重建后重新授权。
 - 不失效 → 条目是路径级绑定，收工。
 
-**当前 defaults 状态**（用户机器 `com.tinyfrictionkillers.ClipboardCleaner`）：`cleaningMode = normalize`、`permissionPromptShown = 1`。想重新测首次对话框：`defaults delete com.tinyfrictionkillers.ClipboardCleaner permissionPromptShown`。
+**当前 defaults 状态**（用户机器 `com.tinyfrictionkillers.ClipboardCleaner`）：`cleaningMode = normalize`、`permissionPromptShown = 1`、`hotkeyKeyCode/hotkeyModifiers` = ⌘K（录制器写入，与新默认一致）。想重新测首次对话框：`defaults delete com.tinyfrictionkillers.ClipboardCleaner permissionPromptShown`。
 
 ### 6.2 工程文件清理 — **等用户关闭 Xcode 后执行**（用户已选"你来清理并提交"）
 
@@ -246,7 +250,7 @@ end tell
 
 **EN:** (1) User re-adds the Accessibility entry → verify trust with the §6.1 snippet → E2E paste. (2) User quits Xcode → run the §6.2 cleanup → commit. (3) Rebuild (Xcode Run) → re-check trust → if lost, present signing options to the user. (4) Optionally live-check §6.3 UI paths. (5) Then the project meets spec DoD; anything beyond §4-9 exclusions needs the owner's explicit go-ahead.
 
-1. 用户完成授权重加（§6.1）→ 用片段验证受信任 → 跑一次真实 ⌥⌘V 往返。
+1. 用户完成授权重加（§6.1）→ 用片段验证受信任 → 跑一次真实 ⌘K 往返。
 2. 用户关闭 Xcode（§6.2）→ 清理工程文件与 `default.profraw` → 提交。
 3. 源码已有改动（`e1c5334`），用户下次 Run 会重新签名 → 复验授权；失效则把签名方案选项**摆给用户选**。
 4. 可选：实机补测 §6.3 各项。

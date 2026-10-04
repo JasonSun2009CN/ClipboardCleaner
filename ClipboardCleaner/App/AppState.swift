@@ -60,6 +60,11 @@ final class AppState {
         set { preferences.cleaningMode = newValue }
     }
 
+    var appLanguage: AppLanguage {
+        get { preferences.appLanguage }
+        set { preferences.appLanguage = newValue }
+    }
+
     var shortcut: HotkeyShortcut { registeredShortcut }
 
     var isAccessibilityTrusted: Bool { accessibility.isTrusted }
@@ -100,6 +105,25 @@ final class AppState {
 
     func quit() {
         NSApplication.shared.terminate(nil)
+    }
+
+    /// Restarts the app so a language change takes effect: macOS
+    /// resolves an app's interface language from `AppleLanguages` once,
+    /// at launch. The new instance starts only after this one exits, so
+    /// the two never hold the hotkey or the status icon at once.
+    func relaunch() {
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/bin/sh")
+        task.arguments = [
+            "-c",
+            "sleep 1; open -n '\(Bundle.main.bundlePath)'",
+        ]
+        do {
+            try task.run()
+        } catch {
+            return // Relaunch failed: keep running; language applies on next manual start.
+        }
+        quit()
     }
 
     // MARK: - Outcome handling

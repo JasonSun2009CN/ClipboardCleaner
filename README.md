@@ -33,6 +33,9 @@ never think about the app — you just get a better Paste.
   your original clipboard exactly as it was.
 - Keeps the normal ⌘V untouched — system paste always behaves the way
   macOS does.
+- Settings offers a shortcut recorder, cleaning mode, launch at login,
+  and an interface language choice (System default / English / 简体中文);
+  changing the language restarts the app to apply it.
 
 ## Cleaning modes
 
