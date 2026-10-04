@@ -6,6 +6,11 @@ on:
       - 'v*'
       - '[0-9]*'
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Existing tag to release'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -17,6 +22,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag_name || github.ref }}
 
       - name: Test
         run: >-
@@ -43,7 +50,7 @@ jobs:
 
       - name: Package app
         env:
-          TAG_NAME: ${{ github.ref_name }}
+          TAG_NAME: ${{ inputs.tag_name || github.ref_name }}
         run: >-
           ditto -c -k --sequesterRsrc --keepParent
           "$RUNNER_TEMP/DerivedData/Build/Products/Release/ClipboardCleaner.app"
@@ -52,7 +59,7 @@ jobs:
       - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_NAME: ${{ github.ref_name }}
+          TAG_NAME: ${{ inputs.tag_name || github.ref_name }}
         run: |
           if gh release view "$TAG_NAME" >/dev/null 2>&1; then
             gh release upload "$TAG_NAME" "ClipboardCleaner-${TAG_NAME}.zip" --clobber
