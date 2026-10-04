@@ -6,11 +6,11 @@ import Testing
 
 @Suite("HotkeyShortcut")
 struct HotkeyShortcutTests {
-    @Test("Default shortcut from preferences displays as ⌥⌘V")
+    @Test("Default shortcut from preferences displays as ⌘K")
     func defaultDisplay() {
         let prefs = AppPreferences(defaults: UserDefaults(suiteName: UUID().uuidString)!)
         let shortcut = HotkeyShortcut(preferences: prefs)
-        #expect(shortcut.displayString == "⌥⌘V")
+        #expect(shortcut.displayString == "⌘K")
         #expect(shortcut.hasModifier)
     }
 

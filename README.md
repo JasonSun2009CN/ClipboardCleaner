@@ -11,7 +11,7 @@ Copy normally
     ↓
 ⌘C
     ↓
-⌥⌘V
+⌘K
     ↓
 Clean clipboard
     ↓
@@ -23,7 +23,7 @@ never think about the app — you just get a better Paste.
 
 ## What it does
 
-- Reads the clipboard at the moment you press ⌥⌘V (nothing is monitored
+- Reads the clipboard at the moment you press ⌘K (nothing is monitored
   or stored).
 - Prefers HTML, then RTF, then plain text, so structure survives:
   paragraphs, line breaks, lists, indentation, code blocks, and

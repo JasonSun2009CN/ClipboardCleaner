@@ -17,7 +17,7 @@ struct CleaningModeTests {
         #expect(prefs.cleaningMode == .normalize)
     }
 
-    @Test("Default shortcut is ⌥⌘V")
+    @Test("Default shortcut is ⌘K")
     func defaultShortcut() {
         let prefs = AppPreferences(defaults: UserDefaults(suiteName: UUID().uuidString)!)
         #expect(prefs.hotkeyKeyCode == AppPreferences.defaultKeyCode)

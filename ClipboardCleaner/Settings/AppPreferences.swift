@@ -15,9 +15,9 @@ final class AppPreferences {
         static let permissionPromptShown = "permissionPromptShown"
     }
 
-    /// Default paste shortcut: ⌥⌘V.
-    static let defaultKeyCode: Int = 0x09 // kVK_ANSI_V
-    static let defaultModifiers: UInt = NSEvent.ModifierFlags([.option, .command]).rawValue
+    /// Default paste shortcut: ⌘K.
+    static let defaultKeyCode: Int = 0x28 // kVK_ANSI_K
+    static let defaultModifiers: UInt = NSEvent.ModifierFlags([.command]).rawValue
 
     /// Stored rather than read from `defaults` on every access:
     /// `@Observable` only tracks stored properties, and SwiftUI views
