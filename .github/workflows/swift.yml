@@ -17,6 +17,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build
-      run: xcodebuild -project ClipboardCleaner.xcodeproj -scheme ClipboardCleaner -configuration Debug -derivedDataPath "$RUNNER_TEMP/DerivedData" build
+      run: xcodebuild -project ClipboardCleaner.xcodeproj -scheme ClipboardCleaner -configuration Debug -derivedDataPath "$RUNNER_TEMP/DerivedData" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
     - name: Run tests
-      run: xcodebuild -project ClipboardCleaner.xcodeproj -scheme ClipboardCleaner -configuration Debug -destination 'platform=macOS' -derivedDataPath "$RUNNER_TEMP/DerivedData" test
+      run: xcodebuild -project ClipboardCleaner.xcodeproj -scheme ClipboardCleaner -configuration Debug -destination 'platform=macOS' -derivedDataPath "$RUNNER_TEMP/DerivedData" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO test
