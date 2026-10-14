@@ -1,17 +1,530 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ClipboardCleaner</title>
-  </head>
-  <body>
-    <h1>ClipboardCleaner</h1>
-    <p>GitHub Pages homepage for this project.</p>
-    <ul>
-      <li><a href="./README.md">README (English)</a></li>
-      <li><a href="./README-cn.md">README（简体中文）</a></li>
-      <li><a href="https://github.com/JasonSun2009CN/ClipboardCleaner/releases">Releases</a></li>
-    </ul>
-  </body>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Clipboard Cleaner：给 macOS 的更好粘贴体验。按下 Command-K，清理格式并直接粘贴纯文本。">
+  <title>Clipboard Cleaner — 更干净的粘贴</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202e;
+      --muted: #647083;
+      --blue: #2878f0;
+      --blue-dark: #1559c7;
+      --surface: #ffffff;
+      --soft: #f4f7fb;
+      --line: #e5eaf2;
+      --shadow: 0 18px 50px rgba(30, 58, 92, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--soft);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+        "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .container {
+      width: min(1100px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 85% 18%, rgba(100, 174, 255, 0.34), transparent 32%),
+        linear-gradient(135deg, #edf5ff 0%, #f8fbff 55%, #eef4ff 100%);
+    }
+
+    .hero::after {
+      position: absolute;
+      right: -120px;
+      bottom: -180px;
+      width: 420px;
+      height: 420px;
+      border: 1px solid rgba(40, 120, 240, 0.14);
+      border-radius: 50%;
+      content: "";
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 0;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 750;
+      letter-spacing: -0.02em;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 17px;
+      box-shadow: 0 7px 16px rgba(40, 120, 240, 0.25);
+    }
+
+    nav a:last-child {
+      color: var(--muted);
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      padding: 82px 0 112px;
+    }
+
+    .eyebrow {
+      margin: 0 0 16px;
+      color: var(--blue-dark);
+      font-size: 13px;
+      font-weight: 750;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 680px;
+      margin-bottom: 22px;
+      font-size: clamp(42px, 7vw, 76px);
+      letter-spacing: -0.065em;
+      line-height: 1.04;
+    }
+
+    .hero-copy {
+      max-width: 570px;
+      margin-bottom: 32px;
+      color: var(--muted);
+      font-size: 19px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 20px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+    }
+
+    .button-primary {
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 9px 18px rgba(40, 120, 240, 0.22);
+    }
+
+    .button-primary:hover {
+      background: var(--blue-dark);
+    }
+
+    .button-secondary {
+      border-color: var(--line);
+      background: rgba(255, 255, 255, 0.75);
+      color: var(--ink);
+    }
+
+    main {
+      padding: 88px 0;
+    }
+
+    .section-heading {
+      max-width: 650px;
+      margin-bottom: 34px;
+    }
+
+    .section-heading h2 {
+      margin-bottom: 10px;
+      font-size: clamp(28px, 4vw, 42px);
+      letter-spacing: -0.045em;
+      line-height: 1.15;
+    }
+
+    .section-heading p {
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      align-items: start;
+    }
+
+    .comparison-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .comparison-card img {
+      display: block;
+      width: 100%;
+      height: 260px;
+      object-fit: contain;
+      background: #fbfcfe;
+    }
+
+    .comparison-card figcaption {
+      padding: 18px 20px 20px;
+    }
+
+    .comparison-card strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 17px;
+    }
+
+    .comparison-card span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .feature-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 80px;
+    }
+
+    .feature {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+    }
+
+    .feature-icon {
+      display: inline-grid;
+      width: 34px;
+      height: 34px;
+      margin-bottom: 16px;
+      place-items: center;
+      border-radius: 10px;
+      background: #eaf2ff;
+      color: var(--blue-dark);
+      font-weight: 800;
+    }
+
+    .feature h3 {
+      margin-bottom: 7px;
+      font-size: 17px;
+    }
+
+    .feature p {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .demo-section {
+      padding: 76px 0;
+      background: #eaf2ff;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .demo-card {
+      display: flex;
+      min-height: 220px;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 26px;
+      border: 1px solid rgba(40, 120, 240, 0.16);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .demo-label {
+      margin-bottom: 12px;
+      color: var(--blue-dark);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .demo-card h3 {
+      margin-bottom: 8px;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+    }
+
+    .demo-card p {
+      margin-bottom: 24px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .placeholder {
+      display: inline-flex;
+      align-items: center;
+      align-self: flex-start;
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px dashed #9eb9e5;
+      border-radius: 10px;
+      color: #5275aa;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .download {
+      padding: 88px 0;
+      text-align: center;
+    }
+
+    .download-card {
+      padding: 48px 24px;
+      border-radius: 22px;
+      background: var(--ink);
+      color: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .download-card h2 {
+      margin-bottom: 10px;
+      font-size: clamp(28px, 4vw, 40px);
+      letter-spacing: -0.04em;
+    }
+
+    .download-card p {
+      margin-bottom: 26px;
+      color: #bbc6d7;
+    }
+
+    .download-card .button-primary {
+      background: #fff;
+      color: var(--blue-dark);
+      box-shadow: none;
+    }
+
+    footer {
+      padding: 25px 0 38px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    @media (max-width: 760px) {
+      .container {
+        width: min(100% - 28px, 560px);
+      }
+
+      .hero-content {
+        padding: 58px 0 76px;
+      }
+
+      .hero-copy {
+        font-size: 17px;
+      }
+
+      main {
+        padding: 64px 0;
+      }
+
+      .comparison-grid,
+      .feature-row,
+      .demo-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .comparison-card img {
+        height: auto;
+        max-height: 420px;
+      }
+
+      .feature-row {
+        margin-top: 52px;
+      }
+
+      .demo-section,
+      .download {
+        padding: 64px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="container">
+      <nav aria-label="主导航">
+        <a class="brand" href="./">
+          <span class="brand-mark" aria-hidden="true">⌘</span>
+          <span>Clipboard Cleaner</span>
+        </a>
+        <a href="#download">下载 App</a>
+      </nav>
+
+      <div class="hero-content">
+        <p class="eyebrow">原生 macOS 工具</p>
+        <h1>复制不变，粘贴更干净。</h1>
+        <p class="hero-copy">
+          用一个快捷键，把富文本和网页里的杂乱格式变成清爽的纯文本，
+          直接粘贴到你正在使用的 App。
+        </p>
+        <div class="actions">
+          <a class="button button-primary" href="#download">下载 Clipboard Cleaner</a>
+          <a class="button button-secondary" href="#comparison">查看效果</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="container" id="comparison">
+      <div class="section-heading">
+        <p class="eyebrow">在 Apple Notes 中的效果</p>
+        <h2>同样的内容，粘贴结果更清爽。</h2>
+        <p>普通 ⌘V 保持 macOS 原生行为；需要清理时，按下 ⌘K 即可。</p>
+      </div>
+
+      <div class="comparison-grid">
+        <figure class="comparison-card">
+          <img src="eg.png" alt="复制源内容示例" loading="lazy">
+          <figcaption>
+            <strong>复制源内容</strong>
+            <span>来自网页的富文本和格式</span>
+          </figcaption>
+        </figure>
+        <figure class="comparison-card">
+          <img src="normal_paste.png" alt="macOS 原生普通粘贴效果" loading="lazy">
+          <figcaption>
+            <strong>macOS 原生粘贴</strong>
+            <span>格式、间距和杂乱内容都被保留</span>
+          </figcaption>
+        </figure>
+        <figure class="comparison-card">
+          <img src="clean_paste.png" alt="Clipboard Cleaner 清理后的粘贴效果" loading="lazy">
+          <figcaption>
+            <strong>清理后的粘贴</strong>
+            <span>保留结构，移除多余格式</span>
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="feature-row">
+        <article class="feature">
+          <span class="feature-icon" aria-hidden="true">⌘</span>
+          <h3>一个快捷键</h3>
+          <p>默认按下 ⌘K，在当前光标位置完成清洁粘贴。</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon" aria-hidden="true">✦</span>
+          <h3>保留文本结构</h3>
+          <p>段落、换行、列表、缩进和代码块保持清晰可读。</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon" aria-hidden="true">✓</span>
+          <h3>完全本地运行</h3>
+          <p>不监控、不保存剪贴板历史，内容不会离开你的 Mac。</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <section class="demo-section" id="demo">
+    <div class="container">
+      <div class="section-heading">
+        <p class="eyebrow">演示</p>
+        <h2>以后在这里看完整演示。</h2>
+        <p>GIF 和视频发布后，只需要替换下面对应位置的链接即可。</p>
+      </div>
+
+      <div class="demo-grid">
+        <article class="demo-card">
+          <div>
+            <p class="demo-label">GIF Demo</p>
+            <h3>快捷键清洁粘贴</h3>
+            <p>预留 GIF 演示位置。将 GIF 文件上传到仓库后，可替换此卡片内容。</p>
+          </div>
+          <span class="placeholder">GIF 即将添加</span>
+        </article>
+        <article class="demo-card">
+          <div>
+            <p class="demo-label">Video</p>
+            <h3>视频平台演示</h3>
+            <p>预留视频平台链接位置，可放置 Bilibili、YouTube 或其他平台的视频。</p>
+          </div>
+          <span class="placeholder">视频链接即将添加</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="download" id="download">
+    <div class="container">
+      <div class="download-card">
+        <h2>现在就让粘贴变干净。</h2>
+        <p>适用于 macOS 14 Sonoma 或更高版本。</p>
+        <a class="button button-primary" href="ClipboardCleaner-v1.0.dmg" download>
+          下载 DMG
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">Clipboard Cleaner · 一个轻量、原生、专注粘贴体验的 macOS 工具</div>
+  </footer>
+</body>
 </html>
